@@ -8,7 +8,15 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = "Q: What is 2^{362} (mod 100) " \
+"A: Since 363 is greater then 10. We will go ahead and factor the modulus first which breaks" \
+"down to 100 = 4 * 25. Now lets compute 2^{362} (mod 4). Lets see powers of 2 modulo 4. 2^{1} is equivalent to 2 (mod 4)" \
+"2^{2} is equivalent to 0 (mod 4). We can see that once the exponent is greater then 2, the result stays 0." \
+"Since 362 is greater then or equal to 2. We can see that 2^{362} is equivalent to 0 (mod 4). " \
+"Now lets compute 2^{362} (mod 25). The gcd(2,25) = 1 and φ(25)=20. So by Euler's theorem: 2^20 is equivalent to 1 (mod 25). " \
+"Now lets reduce the exponent 362 mod 20 = 2. So 2^362 is equivalent to 2^2 = 4 (mod 25)." \
+"Now lets combine this using the Chinese Remainder Theorem. We now have: x is equivalent to 0 (mod 4). And x is equivalent to 4 (mod 25). " \
+"Lets check numbers congruent to 4 mod 25: Since 4 is divisible by 4. The solution modulo 100 is: x = 4. The final answer is 4. "
 
 
 USER_PROMPT = """
@@ -53,7 +61,7 @@ def test_your_prompt(system_prompt: str) -> bool:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": USER_PROMPT},
             ],
-            options={"temperature": 0.3},
+            options={"temperature": 0.3, "num_predict": 512},
         )
         output_text = response.message.content
         final_answer = extract_final_answer(output_text)
@@ -70,3 +78,4 @@ if __name__ == "__main__":
     test_your_prompt(YOUR_SYSTEM_PROMPT)
 
 
+#Successful Prompt
