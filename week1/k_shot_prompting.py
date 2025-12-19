@@ -7,7 +7,29 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You reverse strings by listing characters then reversing their order.
+
+Example 1:
+Input: http
+Characters: h,t,t,p (4 chars)
+Reversed: p,t,t,h
+Answer: ptth
+
+Example 2:
+Input: status  
+Characters: s,t,a,t,u,s (6 chars)
+Reversed: s,u,t,a,t,s
+Answer: sutats
+
+Example 3:
+Input: abcdefghij
+Characters: a,b,c,d,e,f,g,h,i,j (10 chars)
+Reversed: j,i,h,g,f,e,d,c,b,a
+Answer: jihgfedcba
+
+Output ONLY the final reversed string, nothing else.
+"""
 
 USER_PROMPT = """
 Reverse the order of letters in the following word. Only output the reversed word, no other text:
@@ -31,7 +53,7 @@ def test_your_prompt(system_prompt: str) -> bool:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": USER_PROMPT},
             ],
-            options={"temperature": 0.5},
+            options={"temperature": 0.0},
         )
         output_text = response.message.content.strip()
         if output_text.strip() == EXPECTED_OUTPUT.strip():
