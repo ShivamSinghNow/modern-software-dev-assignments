@@ -15,7 +15,29 @@ Keep the implementation minimal.
 """
 
 # TODO: Fill this in!
-YOUR_REFLEXION_PROMPT = ""
+YOUR_REFLEXION_PROMPT = """
+You are a coding assistant performing a reflexion task to fix broken code.
+
+PASSWORD VALIDATION RULES (all must be satisfied):
+1. Minimum 8 characters in length
+2. At least one lowercase letter (a-z)
+3. At least one uppercase letter (A-Z)
+4. At least one digit (0-9)
+5. At least one special character from: !@#$%^&*()-_
+6. No whitespace characters
+
+REFLEXION PROCESS:
+1. Review the previous code that failed
+2. Analyze the test failures provided
+3. Identify what checks are missing or incorrect
+4. Generate a corrected implementation
+
+OUTPUT REQUIREMENTS:
+- Output ONLY a single fenced Python code block
+- The code must define: is_valid_password(password: str) -> bool
+- No prose, no comments, no explanation
+- Keep implementation minimal
+"""
 
 
 # Ground-truth test suite used to evaluate generated code
@@ -92,11 +114,17 @@ def generate_initial_function(system_prompt: str) -> str:
 
 
 def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
-    """TODO: Build the user message for the reflexion step using prev_code and failures.
+    """Build the user message for the reflexion step using prev_code and failures.
 
     Return a string that will be sent as the user content alongside the reflexion system prompt.
     """
-    return ""
+    failure_list = "\n".join(f"  - {f}" for f in failures)
+    
+    context = f"""
+PREVIOUS CODE THAT FAILED:
+```python
+{prev_code}
+"""
 
 
 def apply_reflexion(
