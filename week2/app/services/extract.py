@@ -7,6 +7,7 @@ import json
 from typing import Any
 from ollama import chat
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -65,6 +66,62 @@ def extract_action_items(text: str) -> List[str]:
         unique.append(item)
     return unique
 
+
+class ActionItemsResponse(BaseModel):
+    """Pydantic model for structured LLM response containing action items."""
+    action_items: List[str]
+
+
+def extract_action_items_llm(text: str) -> List[str]:
+    """
+    Extract action items from text using an LLM (Ollama) with structured outputs.
+    Returns a list of action item strings. If the LLM fails, returns an empty list.
+    Only uses LLM extraction - no fallback to manual extraction.
+    """
+    # Get model from environment or use default
+    model = os.getenv("OLLAMA_MODEL", "llama3.2")
+    
+    # Create a prompt for extracting action items
+    prompt = f"""Extract all action items from the following meeting notes or text. 
+An action item is a specific task, todo, or item that requires action or follow-up.
+
+Text:
+{text}
+
+Return the action items as a JSON object with an "action_items" array containing the extracted items."""
+    
+    try:
+        # Use Ollama chat with structured output format using Pydantic schema
+        response = chat(
+            model=model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            format=ActionItemsResponse.model_json_schema(),  # Pass Pydantic schema for structured output
+            options={"temperature": 0}  # Set temperature to 0 for more deterministic output
+        )
+        
+        # Extract the message content from ChatResponse object
+        if not hasattr(response, 'message') or not hasattr(response.message, 'content'):
+            print("Error: Invalid response structure from LLM")
+            return []
+        
+        content = response.message.content
+        
+        # Parse and validate the structured response using Pydantic
+        action_items_data = ActionItemsResponse.model_validate_json(content)
+        
+        # Return the list of action items, filtering out empty strings
+        return [item.strip() for item in action_items_data.action_items if item and item.strip()]
+            
+    except Exception as e:
+        # If LLM extraction fails, log the error and return empty list
+        # No fallback to manual extraction - only LLM is used
+        print(f"Error in LLM extraction: {type(e).__name__}: {e}")
+        return []
 
 def _looks_imperative(sentence: str) -> bool:
     words = re.findall(r"[A-Za-z']+", sentence)
